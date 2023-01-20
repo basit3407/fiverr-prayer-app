@@ -13,7 +13,8 @@ type salahName =
   | "Asr"
   | "Maghrib"
   | "Isha"
-  | "Midnight";
+  | "Midnight"
+  | "Last third of the night";
 
 type Props = {
   salah: salahName;
