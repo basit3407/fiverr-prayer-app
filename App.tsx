@@ -3,41 +3,62 @@ import { useCallback, useEffect, useState } from "react";
 import * as expoLocation from "expo-location";
 import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
-import format from "date-fns/format";
-import { Image, StyleSheet, View, ScrollView } from "react-native";
-import { scale, verticalScale } from "./lib/scaling";
-import defaultTheme, {
-  EnglishFontBold,
-  EnglishFontRegular,
-} from "./styles/theme";
-import {
-  WhiteBody,
-  WhiteBodyLarge,
-  WhiteTitle,
-} from "./src/components/UI/Text";
-import { Ellipse, Location } from "./src/components/UI/svg";
-import getHijriDate from "./src/util/Hijri";
-import SalahTime from "./src/components/App/SalahTime";
+import { StyleSheet, View, Alert } from "react-native";
+import { EnglishFontBold, EnglishFontRegular } from "./styles/theme";
 import {
   Coordinates,
   CalculationMethod,
   PrayerTimes,
   SunnahTimes,
-  Prayer,
-  Qibla,
 } from "adhan";
+import { useAppDispatch } from "./src/redux/hooks";
+import {
+  SET_CURRENT_PRAYER,
+  SET_LOCATION,
+  SET_PRAYER_TIMES,
+  SET_SUNNAH_TIMES,
+} from "./src/redux/constants";
+import * as Updates from "expo-updates";
+import { Provider } from "react-redux";
+import store from "./src/redux/store";
+import Router from "./src/router";
+import { compulsoryPrayerTimes, sunnahPrayerTimes } from "./types/times";
+import format from "date-fns/format";
 
-export default function App() {
+const timeFormat = "hh:mm aa";
+
+const App: React.FC = () => {
+  //For force updating when new new update is published via expo-updates
+  useEffect(() => {
+    (async () => {
+      try {
+        const update = await Updates.checkForUpdateAsync();
+        if (update.isAvailable) {
+          await Updates.fetchUpdateAsync();
+          Alert.alert(
+            "Update available",
+            "A new update is available.Please Restart the app to apply the update.",
+            [{ text: "OK", onPress: async () => await Updates.reloadAsync() }],
+            { cancelable: false }
+          );
+        }
+      } catch (e) {
+        // handle or log error
+      }
+    })();
+  }, []);
+
+  return (
+    <Provider store={store}>
+      <SplashScreenProvider />
+    </Provider>
+  );
+};
+
+const SplashScreenProvider: React.FC = () => {
   const [appIsReady, setAppIsReady] = useState(false);
 
-  const [prayer_times, set_prayer_times] = useState<PrayerTimes>();
-  const [sunnah_times, set_sunnah_times] = useState<SunnahTimes>();
-  const [city, set_city] = useState<string | null>(null);
-  const [country, set_country] = useState<string | null>(null);
-
-  const [current_prayer, set_current_prayer] = useState<
-    "none" | "fajr" | "sunrise" | "dhuhr" | "asr" | "maghrib" | "isha"
-  >();
+  const dispatch = useAppDispatch();
 
   //splash screen
   useEffect(() => {
@@ -76,15 +97,37 @@ export default function App() {
         const prayerTimes = new PrayerTimes(coordinates, date, params);
         const sunnahTimes = new SunnahTimes(prayerTimes);
 
-        set_city(city);
-        set_country(country);
+        dispatch({
+          type: SET_LOCATION,
+          payload: {
+            city,
+            country,
+          },
+        });
 
-        set_prayer_times(prayerTimes);
-        set_sunnah_times(sunnahTimes);
+        const complusory_times: compulsoryPrayerTimes = {
+          fajr: format(prayerTimes.fajr, timeFormat),
+          dhuhr: format(prayerTimes.dhuhr, timeFormat),
+          sunrise: format(prayerTimes.sunrise, timeFormat),
+          asr: format(prayerTimes.asr, timeFormat),
+          maghrib: format(prayerTimes.maghrib, timeFormat),
+          isha: format(prayerTimes.isha, timeFormat),
+        };
+
+        const sunnah_times: sunnahPrayerTimes = {
+          midnight: format(sunnahTimes.middleOfTheNight, timeFormat),
+          lastThirdOfTheNight: format(
+            sunnahTimes.lastThirdOfTheNight,
+            timeFormat
+          ),
+        };
+
+        dispatch({ type: SET_PRAYER_TIMES, payload: complusory_times });
+        dispatch({ type: SET_SUNNAH_TIMES, payload: sunnah_times });
 
         const current = prayerTimes.currentPrayer();
 
-        set_current_prayer(current);
+        dispatch({ type: SET_CURRENT_PRAYER, payload: current });
       } catch (e) {
         console.warn(e);
       } finally {
@@ -115,111 +158,16 @@ export default function App() {
 
   return (
     <View onLayout={onLayoutRootView} style={styles.app}>
-      {/* <ScrollView showsVerticalScrollIndicator={false}> */}
-
-      <View style={styles.screen}>
-        <View style={styles.text_container}>
-          <WhiteTitle>{format(new Date(), "EEE, dd MMM")}</WhiteTitle>
-          <WhiteBody>{getHijriDate(new Date(), 0)}</WhiteBody>
-        </View>
-
-        <View style={styles.ellipse}>
-          <Ellipse />
-        </View>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <SalahTime
-            time={format(prayer_times?.fajr as Date, "hh:mm") + " AM"}
-            salah="Fajr"
-            is_current_prayer={current_prayer === "fajr"}
-          />
-          <SalahTime
-            time={format(prayer_times?.sunrise, "hh:mm") + " AM"}
-            is_current_prayer={current_prayer === "sunrise"}
-            salah="Sunrise"
-          />
-          <SalahTime
-            time={format(prayer_times?.dhuhr, "hh:mm") + " PM"}
-            is_current_prayer={current_prayer === "dhuhr"}
-            salah="Dhuhr"
-          />
-          <SalahTime
-            is_current_prayer={current_prayer === "asr"}
-            time={format(prayer_times?.asr, "hh:mm") + " AM"}
-            salah="Asr"
-          />
-          <SalahTime
-            time={format(prayer_times?.maghrib, "hh:mm") + " PM"}
-            is_current_prayer={current_prayer === "maghrib"}
-            salah="Maghrib"
-          />
-          <SalahTime
-            time={format(prayer_times?.isha, "hh:mm") + " PM"}
-            is_current_prayer={current_prayer === "isha"}
-            salah="Isha"
-          />
-          <SalahTime
-            time={format(sunnah_times?.middleOfTheNight, "hh:mm bb")}
-            salah="Midnight"
-            is_current_prayer={false}
-          />
-          <SalahTime
-            time={format(sunnah_times?.lastThirdOfTheNight, "hh:mm bb")}
-            salah="Last third of the night"
-            is_current_prayer={false}
-          />
-        </ScrollView>
-        <View style={styles.location_container}>
-          <WhiteBodyLarge>{city}</WhiteBodyLarge>
-          <View style={styles.location_row}>
-            <WhiteBody style={styles.country}>{country}</WhiteBody>
-            <Location />
-          </View>
-        </View>
-      </View>
-      <View pointerEvents="none">
-        <Image
-          style={styles.image}
-          source={require("./assets/images/SalahSchedule.png")}
-        />
-      </View>
-
+      <Router />
       <StatusBar style="dark" />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   app: {
     flex: 1,
   },
-  screen: {
-    flex: 1,
-    backgroundColor: defaultTheme.colors.primary.default,
-    paddingTop: verticalScale(56),
-    paddingBottom: verticalScale(35),
-
-    // alignItems: "center",
-  },
-  text_container: {
-    alignItems: "center",
-  },
-  ellipse: {
-    marginTop: verticalScale(35),
-    marginBottom: verticalScale(33),
-  },
-  image: {
-    position: "absolute",
-    bottom: 0,
-  },
-  location_container: {
-    marginTop: verticalScale(32),
-    alignItems: "center",
-  },
-  location_row: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  country: {
-    marginRight: scale(4),
-  },
 });
+
+export default App;

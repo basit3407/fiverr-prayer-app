@@ -7,12 +7,12 @@ import { Volume, VolumeOff } from "../UI/svg";
 import { WhiteBodyLarge } from "../UI/Text";
 
 type salahName =
-  | "Fajr"
-  | "Sunrise"
-  | "Dhuhr"
-  | "Asr"
-  | "Maghrib"
-  | "Isha"
+  | "fajr"
+  | "sunrise"
+  | "dhuhr"
+  | "asr"
+  | "maghrib"
+  | "isha"
   | "Midnight"
   | "Last third of the night";
 
@@ -40,7 +40,7 @@ const SalahTime: React.FC<Props> = (props) => {
     >
       {props.is_current_prayer && <View style={styles.dot} />}
       <View style={styles.row_container}>
-        <WhiteBodyLarge>{props.salah}</WhiteBodyLarge>
+        <WhiteBodyLarge style={styles.salahName}>{props.salah}</WhiteBodyLarge>
         <View style={styles.right_row}>
           <WhiteBodyLarge style={styles.time}>{props.time}</WhiteBodyLarge>
           <TouchableOpacity onPress={onPressVolume}>
@@ -84,5 +84,8 @@ const styles = StyleSheet.create({
     marginRight: scale(16),
     marginLeft: scale(18),
     borderRadius: scale(3),
+  },
+  salahName: {
+    textTransform: "capitalize",
   },
 });
