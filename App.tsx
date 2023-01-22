@@ -115,7 +115,7 @@ const SplashScreenProvider: React.FC = () => {
         };
 
         const sunnah_times: sunnahPrayerTimes = {
-          midnight: format(sunnahTimes.middleOfTheNight, timeFormat),
+          middleOfTheNight: format(sunnahTimes.middleOfTheNight, timeFormat),
           lastThirdOfTheNight: format(
             sunnahTimes.lastThirdOfTheNight,
             timeFormat

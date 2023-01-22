@@ -8,7 +8,7 @@ type compulsoryPrayerTimes = {
 };
 
 type sunnahPrayerTimes = {
-  midnight: string;
+  middleOfTheNight: string;
   lastThirdOfTheNight: string;
 };
 

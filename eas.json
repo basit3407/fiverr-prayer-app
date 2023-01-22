@@ -2,22 +2,19 @@
   "cli": {
     "version": ">= 1.1.1"
   },
-
   "build": {
     "preview": {
       "distribution": "internal",
       "channel": "preview"
     },
-
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "channel": "development"
     },
-
     "production": {
       "channel": "production"
     },
-
     "ios_simulator": {
       "ios": {
         "simulator": true

@@ -1,3 +1,4 @@
 import HomeScreen from "./Home";
+import Settings from "./settings";
 
-export { HomeScreen };
+export { HomeScreen, Settings };

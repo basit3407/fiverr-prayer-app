@@ -6,8 +6,10 @@ import defaultTheme from "../../styles/theme";
 import { SalahTime } from "../components/App";
 import { Ellipse, Location } from "../components/UI/svg";
 import { WhiteBody, WhiteBodyLarge, WhiteTitle } from "../components/UI/Text";
+import { Ionicons } from "@expo/vector-icons";
 import { useAppSelector } from "../redux/hooks";
 import { getHijriDate } from "../util";
+import { IconContainer } from "../components/UI";
 
 const salahNames = [
   "fajr",
@@ -30,9 +32,25 @@ const HomeScreen: React.FC = () => {
   return (
     <>
       <View style={styles.screen}>
-        <View style={styles.text_container}>
-          <WhiteTitle>{format(new Date(), "EEE, dd MMM")}</WhiteTitle>
-          <WhiteBody>{getHijriDate(new Date(), 0)}</WhiteBody>
+        <View style={styles.header}>
+          <IconContainer onPress={() => console.log("pressed")}>
+            <Ionicons
+              name="settings-outline"
+              size={24}
+              color={defaultTheme.colors.secondary.background}
+            />
+          </IconContainer>
+          <View style={styles.text_container}>
+            <WhiteTitle>{format(new Date(), "EEE, dd MMM")}</WhiteTitle>
+            <WhiteBody>{getHijriDate(new Date(), 0)}</WhiteBody>
+          </View>
+          <IconContainer onPress={() => console.log("pressed")}>
+            <Ionicons
+              name="refresh"
+              size={24}
+              color={defaultTheme.colors.secondary.background}
+            />
+          </IconContainer>
         </View>
 
         <View style={styles.ellipse}>
@@ -113,5 +131,13 @@ const styles = StyleSheet.create({
   },
   country: {
     marginRight: scale(4),
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+
+    paddingLeft: scale(40),
+    paddingRight: scale(40),
   },
 });

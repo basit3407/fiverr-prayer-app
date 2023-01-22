@@ -40,7 +40,11 @@ const SalahTime: React.FC<Props> = (props) => {
     >
       {props.is_current_prayer && <View style={styles.dot} />}
       <View style={styles.row_container}>
-        <WhiteBodyLarge style={styles.salahName}>{props.salah}</WhiteBodyLarge>
+        <WhiteBodyLarge
+          style={props.salah != "Last third of the night" && styles.salahName}
+        >
+          {props.salah}
+        </WhiteBodyLarge>
         <View style={styles.right_row}>
           <WhiteBodyLarge style={styles.time}>{props.time}</WhiteBodyLarge>
           <TouchableOpacity onPress={onPressVolume}>
